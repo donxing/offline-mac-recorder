@@ -1,0 +1,61 @@
+import requests
+import json
+from queue import Queue
+import time
+
+class LMStudioRefiner:
+    def __init__(self, summarized_queue):
+        self.lmstudio_url = "http://0.0.0.0:1234/v1/chat/completions"
+        self.model = "deepseek/deepseek-r1-0528-qwen3-8b"
+        self.conversation_history = []
+        self.summarized_queue = summarized_queue
+        self.max_retries = 3
+        self.timeout = 30
+
+    def reset_conversation(self):
+        """Reset conversation history for a new session."""
+        self.conversation_history = []
+
+    def summarize_text(self, text, speaker, segment_idx, start_ms, end_ms):
+        """Send text to LMStudio for summarization and queue the result."""
+        prompt = (
+            f"Summarize the following transcribed text from Speaker {speaker} concisely, preserving key information and meaning. "
+            f"Include the speaker label 'Speaker {speaker}:' at the start of the summarized text. "
+            f"Text: {text}"
+        )
+        self.conversation_history.append({"role": "user", "content": prompt})
+        payload = {
+            "model": self.model,
+            "messages": self.conversation_history,
+            "temperature": 0.7,
+            "max_tokens": -1,
+            "stream": False
+        }
+        
+        for attempt in range(self.max_retries):
+            try:
+                response = requests.post(self.lmstudio_url, json=payload, timeout=self.timeout)
+                response.raise_for_status()
+                data = response.json()
+                summarized_text = data["choices"][0]["message"]["content"].strip()
+                if summarized_text:
+                    self.conversation_history.append({"role": "assistant", "content": summarized_text})
+                    self.summarized_queue.put((summarized_text, segment_idx, start_ms, end_ms))
+                    return
+                else:
+                    print(f"LMStudio returned empty summary on attempt {attempt + 1} for segment {segment_idx}")
+            except Exception as e:
+                print(f"LMStudio summarization error on attempt {attempt + 1} for segment {segment_idx}: {str(e)}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(2)
+                    continue
+                else:
+                    # Fallback to raw text after max retries
+                    summarized_text = f"Speaker {speaker}: {text}"
+                    self.conversation_history.append({"role": "assistant", "content": summarized_text})
+                    self.summarized_queue.put((summarized_text, segment_idx, start_ms, end_ms))
+                    return
+        # Ensure fallback is queued even if loop exits without success
+        summarized_text = f"Speaker {speaker}: {text}"
+        self.conversation_history.append({"role": "assistant", "content": summarized_text})
+        self.summarized_queue.put((summarized_text, segment_idx, start_ms, end_ms))
