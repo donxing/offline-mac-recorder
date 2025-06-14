@@ -24,10 +24,10 @@ SPLIT_NUMBER = 1000  # Maximum characters for merging speaker text
 
 # ==== 加载 FunASR 模型 ====
 home_directory = os.path.expanduser("~")
-asr_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "iic", "speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch")
-vad_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "iic", "speech_fsmn_vad_zh-cn-16k-common-pytorch")
-punc_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "iic", "punc_ct-transformer_zh-cn-common-vocab272727-pytorch")
-spk_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "iic", "speech_campplus_sv_zh-cn_16k-common")
+asr_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "asr", "speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch")
+vad_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "asr", "speech_fsmn_vad_zh-cn-16k-common-pytorch")
+punc_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "asr", "punc_ct-transformer_zh-cn-common-vocab272727-pytorch")
+spk_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "asr", "speech_campplus_sv_zh-cn_16k-common")
 model = AutoModel(
     model=asr_model_path,
     model_revision="v2.0.4",
