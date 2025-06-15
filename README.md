@@ -1,6 +1,6 @@
 # 🎙️ Offline Voice Recorder & Transcriber (macOS)  
 # 🎙️ 离线录音与转写工具（macOS）
-
+![alt text](image.png)
 A high-performance, privacy-focused offline voice recorder and transcription tool built for macOS.  
 一个高性能、注重隐私的离线录音与转写工具，专为 macOS 打造。
 
